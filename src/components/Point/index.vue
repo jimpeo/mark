@@ -10,36 +10,36 @@ export default {
   props: {
     // 画布尺寸
     width: {
-      type: String,
+      type: [String, Number],
       default: '130'
     },
     height: {
-      type: String,
+      type: [String, Number],
       default: '170'
     },
     // 图片地址
     imgSrc: String,
     // 图片位于画布位置
     top: {
-      type: String,
+      type: [String, Number],
       default: '0'
     },
     left: {
-      type: String,
+      type: [String, Number],
       default: '0'
     },
     // 图片的大小
     imgWidth: {
-      type: String,
+      type: [String, Number],
       default: '130'
     },
     imgHeight: {
-      type: String,
+      type: [String, Number],
       default: '170'
     },
     // 圆点的半径
     radius: {
-      type: String,
+      type: [String, Number],
       default: '5'
     },
     // 点填充的颜色
@@ -77,7 +77,7 @@ export default {
     draw () {
       if (!this.$refs.canvas.getContext) return console.warn('未获取到canvas')
       this.context = this.$refs.canvas.getContext("2d")
-      if (!this.imgSrc) return console.warn('未获取到图片地址')
+      if (!this.imgSrc) return console.warn('未获取到图片')
       var img = new Image()
       // 保证图片加载完成后在进行操作
       img.onload = () => {
@@ -131,6 +131,14 @@ export default {
         const blob = new Blob([ia], { type: "image/png" })
         this.$emit('getGeneratedImg', blob)
       }
+    },
+    // 重置画布
+    resetCanvas () {
+      this.context.clearRect(0, 0, this.width, this.height)
+      this.context.drawImage(this.img, this.left, this.top, this.imgWidth, this.imgHeight)
+      this.$nextTick(() => {
+        this.img.src = this.imgSrc
+      })
     }
   }
 }
