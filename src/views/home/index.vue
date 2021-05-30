@@ -177,6 +177,16 @@ export default {
     },
     generateCanvas () {
       this.generateOptions = JSON.parse(JSON.stringify(this.options))
+      this.src = [
+        { src: '', selected: false, date: '' },
+        { src: '', selected: false, date: '' },
+        { src: '', selected: false, date: '' },
+        { src: '', selected: false, date: '' },
+        { src: '', selected: false, date: '' }
+      ]
+      document.querySelectorAll('.mantle').forEach(item => {
+        item.classList.remove('mantle')
+      })
       document.querySelectorAll('#point').forEach(item => {
         // item.__vue__.context.clearRect(0, 0, item.children[0].width, item.children[0].height)
         // item.__vue__.draw()
@@ -192,7 +202,6 @@ export default {
       this.options.imgSrc = URL.createObjectURL(uploadedImg)
     },
     selectImg (event, index) {
-      console.log(event.target)
       if (event.target.className == 'shade mantle') {
         event.target.classList.remove('mantle')
         this.src[index].selected = false
@@ -202,8 +211,11 @@ export default {
       }
     },
     downloadImg () {
+      let selFlag, srcFlag = false
       this.src.forEach((item, index) => {
+        if (item.src.length) srcFlag = true
         if (item.selected) {
+          selFlag = true
           if (!!window.ActiveXObject || 'ActiveXObject' in window) {
             // ie兼容性处理
             window.open(item.src, '_blank')
@@ -217,6 +229,8 @@ export default {
           }
         }
       })
+      if (!srcFlag) return alert('未生成图片！')
+      if (!selFlag) return alert('请选择图片！')
     }
   }
 }
