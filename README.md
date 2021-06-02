@@ -2,6 +2,10 @@
 
 一款简洁高效的使用canvas实现的图片标注功能组件
 
+## 预览地址
+
+GitHub：https://jimpeo.github.io/mark/
+
 ## 使用方式
 
 下载公共组件components中Point组件文件，直接放入需要的项目中即可。
