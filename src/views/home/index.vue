@@ -11,12 +11,12 @@
         <aw-button-group style="width: 33%;margin-left: 0">
           <span class="label">生成图片格式</span>
           <aw-button v-for="item in imgType" :key="item.id" :id="item.category" :disabled="!item.disabled" size="mini"
-            @click="changeType($event)">{{item.typeName}}</aw-button>
+                     @click="changeType($event)">{{item.typeName}}</aw-button>
         </aw-button-group>
         <div>
           <span class="label">连续点</span>
           <aw-button v-for="item in continuationType" :key="item.id" :id="item.category" :disabled="!item.disabled" size="mini"
-            @click="changeContinuity($event)">{{item.typeName}}</aw-button>
+                     @click="changeContinuity($event)">{{item.typeName}}</aw-button>
         </div>
       </div>
       <div class="row">
@@ -58,10 +58,10 @@
       <div v-for="(item, index) in num" :key="index">
         <div class="imgarea_tip">操作区域：</div>
         <point id="point" :width="generateOptions.width" :height="generateOptions.height" :imgSrc="generateOptions.imgSrc"
-          :imgWidth="generateOptions.imgWidth" :imgHeight="generateOptions.imgHeight" :top="generateOptions.top"
-          :left="generateOptions.left" :radius="generateOptions.radius" :color="generateOptions.color"
-          :frameColor="generateOptions.frameColor" :continuation="generateOptions.continuation"
-          :imgType="generateOptions.imgTypeActive" @getGeneratedImg="getGeneratedImg($event, index)" />
+               :imgWidth="generateOptions.imgWidth" :imgHeight="generateOptions.imgHeight" :top="generateOptions.top"
+               :left="generateOptions.left" :radius="generateOptions.radius" :color="generateOptions.color"
+               :frameColor="generateOptions.frameColor" :continuation="generateOptions.continuation"
+               :imgType="generateOptions.imgTypeActive" @getGeneratedImg="getGeneratedImg(arguments, index)" />
         <div class="imgarea_tip">生成的图像：</div>
         <div class="imgarea_main">
           <img :src="src[index].src" alt="" title="点击选择进行下载">
@@ -158,7 +158,8 @@ export default {
         else if (item.typeName == '否' && !item.disabled) this.options.continuation = false
       })
     },
-    getGeneratedImg (img, index = 0) {
+    getGeneratedImg (val, index = 0) {
+      let img = val[0]
       if (this.generateOptions.imgTypeActive == "base64") {
         let member = {
           src: img,
@@ -188,8 +189,6 @@ export default {
         item.classList.remove('mantle')
       })
       document.querySelectorAll('#point').forEach(item => {
-        // item.__vue__.context.clearRect(0, 0, item.children[0].width, item.children[0].height)
-        // item.__vue__.draw()
         item.__vue__.resetCanvas()
       })
       this.genCanBtnStatus = false

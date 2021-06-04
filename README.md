@@ -31,7 +31,7 @@ GitHub：https://jimpeo.github.io/mark/
 
 | 参数            | 说明           | 回调参数   |
 | --------------- | -------------- | ---------- |
-| getGeneratedImg | 获取生成的图片 | 生成的图片 |
+| getGeneratedImg | 获取生成的图片以及当前的配置项 | img / config |
 
 ## 最后
 

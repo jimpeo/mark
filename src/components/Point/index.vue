@@ -121,7 +121,7 @@ export default {
     saveImage () {
       const base64String = this.$refs.canvas.toDataURL()
       if (this.imgType == 'base64') {
-        this.$emit('getGeneratedImg', base64String)
+        this.$emit('getGeneratedImg', base64String, this.$props)
       } else if (this.imgType == 'blob') {
         const data = window.atob(base64String.split(",")[1])
         const ia = new Uint8Array(data.length)
@@ -129,7 +129,7 @@ export default {
           ia[i] = data.charCodeAt(i)
         }
         const blob = new Blob([ia], { type: "image/png" })
-        this.$emit('getGeneratedImg', blob)
+        this.$emit('getGeneratedImg', blob, this.$props)
       }
     },
     // 重置画布
