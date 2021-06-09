@@ -68,7 +68,7 @@
                :imgWidth="generateOptions.imgWidth" :imgHeight="generateOptions.imgHeight" :top="generateOptions.top"
                :left="generateOptions.left" :radius="generateOptions.radius" :color="generateOptions.color"
                :frameColor="generateOptions.frameColor" :continuation="generateOptions.continuation"
-               :imgType="generateOptions.imgTypeActive" @getGeneratedImg="getGeneratedImg(arguments, index)" />
+               :imgType="generateOptions.imgTypeActive" :disabled="generateOptions.disabled" @getGeneratedImg="getGeneratedImg(arguments, index)" />
         <div class="imgarea_tip">生成的图像：</div>
         <div class="imgarea_main">
           <img :src="src[index].src" alt="" title="点击选择进行下载">
@@ -177,7 +177,6 @@ export default {
         if (item.typeName == '是' && item.active) this.options.disabled = true
         else if (item.typeName == '否' && item.active) this.options.disabled = false
       })
-      console.log(this.disabledType)
     },
     getGeneratedImg (val, index = 0) {
       let img = val[0]
