@@ -10,13 +10,13 @@
         <input ref="upload" type="file" style="display: none" @change="getUploadedImg">
         <aw-button-group style="width: 33%;margin-left: 0">
           <span class="label">生成图片格式</span>
-          <aw-button v-for="item in imgType" :key="item.id" :id="item.category" :disabled="!item.disabled" size="mini"
-                     @click="changeType($event)">{{item.typeName}}</aw-button>
+          <aw-button v-for="item in imgType" :key="item.id" :id="item.category" :disabled="!item.active" size="mini"
+                     @click="changeType">{{item.typeName}}</aw-button>
         </aw-button-group>
         <div>
           <span class="label">连续点</span>
-          <aw-button v-for="item in continuationType" :key="item.id" :id="item.category" :disabled="!item.disabled" size="mini"
-                     @click="changeContinuity($event)">{{item.typeName}}</aw-button>
+          <aw-button v-for="item in continuationType" :key="item.id" :id="item.category" :disabled="!item.active" size="mini"
+                     @click="changeContinuity">{{item.typeName}}</aw-button>
         </div>
       </div>
       <div class="row">
@@ -50,6 +50,13 @@
         <div>
           <span class="label">圆点边框颜色</span>
           <aw-input class="large_input" size="mini" v-model="options.frameColor"></aw-input>
+        </div>
+      </div>
+      <div class="row">
+        <div style="width: 33%">
+          <span class="label">是否禁用</span>
+          <aw-button v-for="item in disabledType" :key="item.id" :id="item.category" :disabled="item.active" size="mini"
+                     @click="changeDisabled">{{item.typeName}}</aw-button>
         </div>
       </div>
       <div class="tip">调整属性后需要重新生成画布才能生效，生成画布按钮为红色时需要点击重新生成画布！建议：为了保证生成的图片没有透明区域，请配置图片尺寸与画布尺寸一致。</div>
@@ -88,12 +95,16 @@ export default {
   data () {
     return {
       imgType: [
-        { id: 1, category: 'img', typeName: 'base64', disabled: false },
-        { id: 2, category: 'img', typeName: 'blob', disabled: true }
+        { id: 1, category: 'img', typeName: 'base64', active: false },
+        { id: 2, category: 'img', typeName: 'blob', active: true }
       ],
       continuationType: [
-        { id: 1, category: 'continuation', typeName: '是', disabled: true },
-        { id: 2, category: 'continuation', typeName: '否', disabled: false }
+        { id: 1, category: 'continuation', typeName: '是', active: true },
+        { id: 2, category: 'continuation', typeName: '否', active: false }
+      ],
+      disabledType: [
+        { id: 1, category: 'disabled', typeName: '是', active: false },
+        { id: 2, category: 'disabled', typeName: '否', active: true }
       ],
       genCanBtnStatus: false,
       options: {
@@ -108,7 +119,8 @@ export default {
         color: 'red',
         frameColor: '#f3715c',
         continuation: false,
-        imgTypeActive: 'base64'
+        imgTypeActive: 'base64',
+        disabled: false
       },
       generateOptions: {
         width: 190,
@@ -122,7 +134,8 @@ export default {
         color: 'red',
         frameColor: '#f3715c',
         continuation: false,
-        imgTypeActive: 'base64'
+        imgTypeActive: 'base64',
+        disabled: false
       },
       num: [1, 2, 3, 4, 5],
       src: [
@@ -147,16 +160,24 @@ export default {
   methods: {
     changeType () {
       this.imgType.forEach(item => {
-        item.disabled = !item.disabled
-        if (!item.disabled) this.options.imgTypeActive = item.typeName
+        item.active = !item.active
+        if (!item.active) this.options.imgTypeActive = item.typeName
       })
     },
     changeContinuity () {
       this.continuationType.forEach(item => {
-        item.disabled = !item.disabled
-        if (item.typeName == '是' && !item.disabled) this.options.continuation = true
-        else if (item.typeName == '否' && !item.disabled) this.options.continuation = false
+        item.active = !item.active
+        if (item.typeName == '是' && !item.active) this.options.continuation = true
+        else if (item.typeName == '否' && !item.active) this.options.continuation = false
       })
+    },
+    changeDisabled () {
+      this.disabledType.forEach(item => {
+        item.active = !item.active
+        if (item.typeName == '是' && item.active) this.options.disabled = true
+        else if (item.typeName == '否' && item.active) this.options.disabled = false
+      })
+      console.log(this.disabledType)
     },
     getGeneratedImg (val, index = 0) {
       let img = val[0]

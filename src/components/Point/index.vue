@@ -61,6 +61,11 @@ export default {
     imgType: {
       type: String,
       default: 'base64'
+    },
+    // 禁用状态
+    disabled: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -88,6 +93,7 @@ export default {
     },
     // 加点
     addOrigin (event) {
+      if (this.disabled) return
       let context = this.context
       if (!this.continuation) {
         // 重新渲染canvas
