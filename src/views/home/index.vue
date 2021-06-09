@@ -10,8 +10,8 @@
         <input ref="upload" type="file" style="display: none" @change="getUploadedImg">
         <aw-button-group style="width: 33%;margin-left: 0">
           <span class="label">生成图片格式</span>
-          <aw-button v-for="item in imgType" :key="item.id" :id="item.category" :disabled="!item.active" size="mini"
-                     @click="changeType">{{item.typeName}}</aw-button>
+          <aw-button v-for="item in imgType" :key="item.id" :id="item.category" :disabled="!item.active" size="mini" @click="changeType">
+            {{item.typeName}}</aw-button>
         </aw-button-group>
         <div>
           <span class="label">连续点</span>
@@ -62,13 +62,18 @@
       <div class="tip">调整属性后需要重新生成画布才能生效，生成画布按钮为红色时需要点击重新生成画布！建议：为了保证生成的图片没有透明区域，请配置图片尺寸与画布尺寸一致。</div>
     </div>
     <div class="imgarea">
-      <div v-for="(item, index) in num" :key="index">
+      <div v-for="(item, index) in num" :key="item.id">
+        <div style="display: flex; justify-content: space-around;">
+          <aw-button size="mini" :disabled="item.render" @click="item.render = true">开</aw-button>
+          <aw-button size="mini" :disabled="!item.render" @click="item.render = false">关</aw-button>
+        </div>
         <div class="imgarea_tip">操作区域：</div>
-        <point id="point" :width="generateOptions.width" :height="generateOptions.height" :imgSrc="generateOptions.imgSrc"
-               :imgWidth="generateOptions.imgWidth" :imgHeight="generateOptions.imgHeight" :top="generateOptions.top"
-               :left="generateOptions.left" :radius="generateOptions.radius" :color="generateOptions.color"
+        <point id="point" :render="item.render" :width="generateOptions.width" :height="generateOptions.height"
+               :imgSrc="generateOptions.imgSrc" :imgWidth="generateOptions.imgWidth" :imgHeight="generateOptions.imgHeight"
+               :top="generateOptions.top" :left="generateOptions.left" :radius="generateOptions.radius" :color="generateOptions.color"
                :frameColor="generateOptions.frameColor" :continuation="generateOptions.continuation"
-               :imgType="generateOptions.imgTypeActive" :disabled="generateOptions.disabled" @getGeneratedImg="getGeneratedImg(arguments, index)" />
+               :imgType="generateOptions.imgTypeActive" :disabled="generateOptions.disabled"
+               @getGeneratedImg="getGeneratedImg(arguments, index)" />
         <div class="imgarea_tip">生成的图像：</div>
         <div class="imgarea_main">
           <img :src="src[index].src" alt="" title="点击选择进行下载">
@@ -137,7 +142,13 @@ export default {
         imgTypeActive: 'base64',
         disabled: false
       },
-      num: [1, 2, 3, 4, 5],
+      num: [
+        { id: 1, render: true },
+        { id: 2, render: true },
+        { id: 3, render: true },
+        { id: 4, render: true },
+        { id: 5, render: true }
+      ],
       src: [
         { src: '', selected: false, date: '' },
         { src: '', selected: false, date: '' },

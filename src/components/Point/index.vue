@@ -8,6 +8,12 @@
 export default {
   name: 'point',
   props: {
+    // 是否渲染画布
+    render: {
+      type: Boolean,
+      default: false,
+      require: true
+    },
     // 画布尺寸
     width: {
       type: [String, Number],
@@ -74,8 +80,21 @@ export default {
       img: null
     }
   },
-  mounted () {
-    this.draw()
+  watch: {
+    'render': {
+      handler (newVal) {
+        if (newVal) {
+          this.$nextTick(() => {
+            this.draw()
+          })
+        } else {
+          if (this.context) {
+            this.context.clearRect(0, 0, this.width, this.height)
+          }
+        }
+      },
+      immediate: true
+    }
   },
   methods: {
     // 创建画布并将图片放到上面
@@ -93,7 +112,7 @@ export default {
     },
     // 加点
     addOrigin (event) {
-      if (this.disabled) return
+      if (this.disabled || !this.render) return
       let context = this.context
       if (!this.continuation) {
         // 重新渲染canvas
