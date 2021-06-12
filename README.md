@@ -14,6 +14,7 @@ GitHub：https://jimpeo.github.io/mark/
 
 | 参数         | 说明                   | 类型            | 可选值        | 默认值   |
 | ------------ | ---------------------- | --------------- | ------------- | -------- |
+| render       | 是否渲染画布           | Boolean         | —             | false    |
 | width        | 画布宽度               | string / number | —             | 130      |
 | height       | 画布高度               | string / number | —             | 170      |
 | imgSrc       | 图片地址               | string          | —             | —        |
@@ -26,6 +27,7 @@ GitHub：https://jimpeo.github.io/mark/
 | frameColor   | 圆点边框颜色           | string          | —             | \#f3715c |
 | continuation | 是否可以连续标注       | Boolean         | —             | false    |
 | imgType      | 生成的图片格式类型     | string          | base64 / blob | base64   |
+| disabled     | 是否可用               | Boolean         | —             | false    |
 
 ### Methods
 
