@@ -303,9 +303,12 @@ export default {
     // 重置画布
     resetCanvas () {
       if (this.type == 'line') {
+        console.log(this.type)
         this.activeIndex = -1
         this.imgStack = []
+        document.getElementById('reset').classList.remove('tooltip')
         document.getElementById('reset').classList.add('rotate')
+        console.log(document.getElementById('reset'))
         document.getElementById("reset").addEventListener("transitionend", () => {
           document.getElementById('reset').classList.remove('rotate')
         })
@@ -425,9 +428,9 @@ export default {
     }
     // 重置旋转效果
     .rotate {
-      transition: transform 0.3s;
+      transition: transform .3s;
       transform: rotate(180deg);
-      transform-origin: 10px 10px;
+      transform-origin: 10px 11px;
     }
   }
 }
