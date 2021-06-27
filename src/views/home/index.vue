@@ -10,7 +10,7 @@
     </a-layout-header>
     <a-layout-content style="margin-top: 20px; padding: 0 50px">
       <div :style="{ background: '#fff', padding: '24px', minHeight: 'calc(100vh - 135px)' }">
-        <mark-exhibition />
+        <free-painting-exhibition />
         <point-exhibition v-if="false" />
       </div>
     </a-layout-content>
@@ -21,11 +21,11 @@
 </template>
 
 <script>
-import markExhibition from '../markExhibition/index.vue'
+import freePaintingExhibition from '../freePaintingExhibition/index.vue'
 import pointExhibition from '../pointExhibition/index.vue'
 export default {
   components: {
-    markExhibition,
+    freePaintingExhibition,
     pointExhibition
   },
   data () {

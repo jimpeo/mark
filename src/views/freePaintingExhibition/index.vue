@@ -1,5 +1,5 @@
 <template>
-  <div class="mark_exhibition">
+  <div class="free_exhibition">
     <free-painting type="line" width="500" height="500" />
   </div>
 </template>

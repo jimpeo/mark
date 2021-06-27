@@ -1,6 +1,7 @@
 <template>
   <div class="free">
-    <canvas class="canvas" ref="canvas" :width="width" :height="height" @click="handlerClick">你的浏览器不支持canvas</canvas>
+    <canvas class="canvas" ref="canvas" :width="width" :height="height" @click="addOrigin"
+      @mousedown="drawLine">你的浏览器不支持canvas</canvas>
     <div class="free_toolbar" v-if="type == 'line'">
       <div class="free_toolbar_size">
         <ul class="size-control" ref="sizeControl">
@@ -12,13 +13,20 @@
       <div class="free_toolbar_color">
         <ul class="color-control" ref="colorControl">
           <li v-for="(item, index) in toolbarColor" :key="index" :class="{'active':!index && toolbarColor.length }"
-              :style="`background-color: ${item}`" :data-color="item" @click="changeColor"></li>
+            :style="`background-color: ${item}`" :data-color="item" @click="changeColor"></li>
           <li ref="all" data-color="all" @click="changeColor"></li>
         </ul>
       </div>
       <div class="free_toolbar_eraser">
-        <svg-icon id="prev" icon-name="icon-prev" @click="prev"></svg-icon>
-        <svg-icon id="next" icon-name="icon-next" @click="next"></svg-icon>
+        <svg-icon id="prev" icon-name="icon-prev" @mouseenter.native="tooltip($event, '上一步')" @click="prev"></svg-icon>
+        <svg-icon id="next" icon-name="icon-next" @mouseenter.native="tooltip($event, '下一步')" @click="next"></svg-icon>
+      </div>
+      <div class="free_toolbar_reset">
+        <svg-icon id="rubber" icon-name="icon-rubber" width="21" height="22" @mouseenter.native="tooltip($event, '擦除')"
+          @click="erase"></svg-icon>
+        <svg-icon id="reset" icon-name="icon-reset" width="21" height="22" @mouseenter.native="tooltip($event, '重置')"
+          @click="resetCanvas">
+        </svg-icon>
       </div>
     </div>
   </div>
@@ -148,19 +156,10 @@ export default {
         this.img = img
       }
     },
-    // 鼠标操作
-    handlerClick () {
-      if (!this.tips.status) {
-        return console.warn(this.tips.message)
-      }
-      if (this.type == 'origin') {
-        this.addOrigin()
-      } else if (this.type == 'line') {
-        this.drawLine()
-      }
-    },
     // 加点
     addOrigin (event) {
+      if (!this.tips.status) return console.warn(this.tips.message)
+      if (this.type !== 'origin') return
       let context = this.context
       if (!this.continuation) {
         // 重新渲染canvas
@@ -193,16 +192,14 @@ export default {
       this.saveImage()
     },
     // 画线
-    drawLine () {
-      this.$refs.canvas.onmousedown = (event) => {
-        this.operationStatus = true
-        let mx = event.layerX,
-          my = event.layerY
-        this.context.beginPath()
-        this.context.moveTo(mx, my)
-        this.mousemove()
-        this.mouseup()
-      }
+    drawLine (event) {
+      this.operationStatus = true
+      let mx = event.layerX,
+        my = event.layerY
+      this.context.beginPath()
+      this.context.moveTo(mx, my)
+      this.mousemove()
+      this.mouseup()
     },
     // 修改线条宽度
     changeSize (e) {
@@ -232,6 +229,8 @@ export default {
     },
     // 鼠标移动
     mousemove () {
+      if (!this.tips.status) return console.warn(this.tips.message)
+      if (this.type !== 'line') return
       this.$refs.canvas.onmousemove = (event) => {
         if (this.operationStatus) {
           let ex = event.layerX,
@@ -247,38 +246,41 @@ export default {
     },
     // 鼠标抬起
     mouseup () {
-      this.$refs.canvas.onmouseup = () => {
+      document.onmouseup = () => {
         this.operationStatus = false
         this.$refs.canvas.onmousemove = null
-        this.$refs.canvas.onmouseup = null
+        document.onmouseup = null
         let imgData = this.context.getImageData(0, 0, this.width, this.height)
         this.imgStack.push(imgData)
         this.activeIndex = this.imgStack.length - 1
-        console.log(this.imgStack)
         this.saveImage()
       }
     },
     // 上一次操作记录
     prev () {
-      if (timer) return
-      let timer
+      let timer = null
       document.getElementById('prev').style = 'position: relative; top: 1px; left: 1px;'
       if (this.activeIndex > 0) {
         this.activeIndex--
         this.context.putImageData(this.imgStack[this.activeIndex], 0, 0)
       }
       timer = window.setInterval(() => {
-        window.clearInterval(timer)
+        if (timer) window.clearInterval(timer)
         document.getElementById('prev').style = 'position: relative; top: 0; left: 0;'
-      }, 1000)
+      }, 200)
     },
     // 下一次操作记录
     next () {
-      console.log(this.activeIndex)
+      let timer = null
+      document.getElementById('next').style = 'position: relative; top: 1px; left: 1px;'
       if (this.activeIndex < this.imgStack.length - 1) {
         this.activeIndex++
         this.context.putImageData(this.imgStack[this.activeIndex], 0, 0)
       }
+      timer = window.setInterval(() => {
+        if (timer) window.clearInterval(timer)
+        document.getElementById('next').style = 'position: relative; top: 0; left: 0;'
+      }, 200)
     },
     // 保存图片
     saveImage () {
@@ -295,21 +297,44 @@ export default {
         this.$emit('getGeneratedImg', blob, this.$props)
       }
     },
+    erase () {
+
+    },
     // 重置画布
     resetCanvas () {
+      if (this.type == 'line') {
+        this.activeIndex = -1
+        this.imgStack = []
+        document.getElementById('reset').classList.add('rotate')
+        document.getElementById("reset").addEventListener("transitionend", () => {
+          document.getElementById('reset').classList.remove('rotate')
+        })
+      }
       this.context.clearRect(0, 0, this.width, this.height)
       if (this.imgSrc) {
         this.context.drawImage(this.img, this.left, this.top, this.imgWidth, this.imgHeight)
+        this.$nextTick(() => {
+          this.img.src = this.imgSrc
+        })
       }
-      this.$nextTick(() => {
-        this.img.src = this.imgSrc
-      })
+    },
+    // 工具提示
+    tooltip (e, tip) {
+      e.target.style.position = 'relative'
+      e.target.setAttribute('data-tip', tip)
+      e.target.classList.add('tooltip')
+      let timer = null
+      timer = window.setInterval(() => {
+        if (timer) window.clearInterval(timer)
+        e.target.classList.remove('tooltip')
+      }, 1000)
     }
   }
 }
 </script>
 
 <style lang="less" scoped>
+@import "./styles/tooltip.less";
 .free {
   display: inline-block;
   .canvas {
@@ -318,8 +343,8 @@ export default {
   .free_toolbar {
     display: flex;
     justify-content: start;
-    width: 310px;
-    height: 20px;
+    width: 407px;
+    height: 32px;
     padding: 5px 0;
     background-color: #7bbfea;
     ul {
@@ -327,7 +352,7 @@ export default {
       justify-content: space-around;
       align-items: center;
       width: 100%;
-      height: 20px;
+      height: 22px;
       margin: 0;
       padding: 0;
       li {
@@ -335,7 +360,9 @@ export default {
         list-style: none;
       }
     }
+    // 大小选择
     .free_toolbar_size {
+      position: relative;
       width: 25%;
       padding: 0 5px;
       border-right: 1px solid #00ae9d;
@@ -361,7 +388,9 @@ export default {
         }
       }
     }
+    // 颜色选择
     .free_toolbar_color {
+      position: relative;
       padding: 0 10px;
       border-right: 1px solid #00ae9d;
       .color-control {
@@ -380,12 +409,25 @@ export default {
         }
       }
     }
+    // 后退与前进
     .free_toolbar_eraser {
+      position: relative;
       padding: 0 10px;
-      .icon {
-        width: 20px;
-        height: 20px;
+      border-right: 1px solid #00ae9d;
+    }
+    // 重置
+    .free_toolbar_reset {
+      position: relative;
+      padding: 0 10px;
+      #rubber {
+        margin-right: 10px;
       }
+    }
+    // 重置旋转效果
+    .rotate {
+      transition: transform 0.3s;
+      transform: rotate(180deg);
+      transform-origin: 10px 10px;
     }
   }
 }
