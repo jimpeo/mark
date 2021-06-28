@@ -1,20 +1,25 @@
 <template>
   <div class="free">
     <canvas class="canvas" ref="canvas" :width="width" :height="height" @click="addOrigin"
-      @mousedown="drawLine">你的浏览器不支持canvas</canvas>
+            @mousedown="drawLine">你的浏览器不支持canvas</canvas>
     <div class="free_toolbar" v-if="type == 'line'">
       <div class="free_toolbar_size">
         <ul class="size-control" ref="sizeControl">
-          <li class="mini active" data-size="2" @click="changeSize"></li>
-          <li class="normal" data-size="4" @click="changeSize"></li>
-          <li class="large" data-size="6" @click="changeSize"></li>
+          <li class="mini active" data-size="2" @click="changeSize" @mouseenter="tooltip($event, '画笔大小：2px')"></li>
+          <li class="normal" data-size="4" @click="changeSize" @mouseenter="tooltip($event, '画笔大小：4px')"></li>
+          <li class="large" data-size="6" @click="changeSize" @mouseenter="tooltip($event, '画笔大小：6px')"></li>
         </ul>
       </div>
       <div class="free_toolbar_color">
         <ul class="color-control" ref="colorControl">
           <li v-for="(item, index) in toolbarColor" :key="index" :class="{'active':!index && toolbarColor.length }"
-            :style="`background-color: ${item}`" :data-color="item" @click="changeColor"></li>
-          <li ref="all" data-color="all" @click="changeColor"></li>
+              :style="`background-color: ${item}`" :data-color="item" @click="changeColor"
+              @mouseenter="tooltip($event, `画笔颜色：${item}`)">
+          </li>
+          <li ref="all" data-color="all" @click="changeColor" :style="`background-color: ${paletteColor}`"
+              @mouseenter="tooltip($event, '切换颜色')">
+            <palette :show.sync="paletteShow" @getResultColor="getResultColor" />
+          </li>
         </ul>
       </div>
       <div class="free_toolbar_eraser">
@@ -23,9 +28,10 @@
       </div>
       <div class="free_toolbar_reset">
         <svg-icon id="rubber" icon-name="icon-rubber" width="21" height="22" @mouseenter.native="tooltip($event, '擦除')"
-          @click="erase"></svg-icon>
+                  @click="erase">
+        </svg-icon>
         <svg-icon id="reset" icon-name="icon-reset" width="21" height="22" @mouseenter.native="tooltip($event, '重置')"
-          @click="resetCanvas">
+                  @click="resetCanvas">
         </svg-icon>
       </div>
     </div>
@@ -34,10 +40,12 @@
 
 <script>
 import svgIcon from './svgIcon'
+import palette from './palette'
 export default {
   name: 'freePainting',
   components: {
-    svgIcon
+    svgIcon,
+    palette
   },
   props: {
     // 标注类型
@@ -48,7 +56,7 @@ export default {
     // 颜色工具栏
     toolbarColor: {
       type: Array,
-      default: () => ['black', 'red', 'green', 'white']
+      default: () => ['black', 'red', 'green', 'blue']
     },
     // 画布尺寸
     width: {
@@ -114,8 +122,12 @@ export default {
       },
       img: null,
       operationStatus: false,
+      activeColor: this.toolbarColor.length ? this.toolbarColor[0] : 'black',
+      activeSize: '2',
       imgStack: [],
-      activeIndex: 0
+      activeIndex: 0,
+      paletteColor: 'rgba(0, 186, 189, 1)',
+      paletteShow: false
     }
   },
   mounted () {
@@ -211,20 +223,17 @@ export default {
     },
     // 修改线条颜色
     changeColor (e) {
+      // 阻止子元素触发点击事件
+      if (e.currentTarget !== e.target) return
       this.$refs.colorControl.childNodes.forEach(item => {
         item.classList.remove('active')
       })
       e.target.classList.add('active')
-      this.activeColor = e.target.getAttribute('data-color')
       if (e.target.getAttribute('data-color') == 'all') {
-        let dlgHelper = document.getElementById('dlgHelper')
-        if (!document.all && window.ActiveXObject) return
-        var sColor = dlgHelper.ChooseColorDlg()
-        var color = sColor.toString(16)
-        while (color.length < 6) color = "0" + color
-        // window.color = color
-        color = "#" + color
-        this.$refs.all.style.backgroundColor = color
+        this.paletteShow = true
+      } else {
+        this.paletteShow = false
+        this.activeColor = e.target.getAttribute('data-color')
       }
     },
     // 鼠标移动
@@ -320,6 +329,11 @@ export default {
           this.img.src = this.imgSrc
         })
       }
+    },
+    // 获取调色板颜色
+    getResultColor (color) {
+      this.activeColor = color[1]
+      this.paletteColor = color[1]
     },
     // 工具提示
     tooltip (e, tip) {
@@ -428,7 +442,7 @@ export default {
     }
     // 重置旋转效果
     .rotate {
-      transition: transform .3s;
+      transition: transform 0.3s;
       transform: rotate(180deg);
       transform-origin: 10px 11px;
     }
