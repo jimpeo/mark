@@ -17,7 +17,7 @@
               @mouseenter="tooltip($event, `画笔颜色：${item}`)">
           </li>
           <li ref="all" data-color="all" @click="changeColor" :style="`background-color: ${paletteColor}`"
-              @mouseenter="tooltip($event, '切换颜色')">
+              @mouseenter="tooltip($event, `画笔颜色：${paletteColor}，点击后选择切换`)">
             <palette :show.sync="paletteShow" @getResultColor="getResultColor" />
           </li>
         </ul>
@@ -27,9 +27,9 @@
         <svg-icon id="next" icon-name="icon-next" @mouseenter.native="tooltip($event, '下一步')" @click="next"></svg-icon>
       </div>
       <div class="free_toolbar_reset">
-        <svg-icon id="rubber" icon-name="icon-rubber" width="21" height="22" @mouseenter.native="tooltip($event, '擦除')"
+        <!-- <svg-icon id="rubber" icon-name="icon-rubber" width="21" height="22" @mouseenter.native="tooltip($event, '擦除')"
                   @click="erase">
-        </svg-icon>
+        </svg-icon> -->
         <svg-icon id="reset" icon-name="icon-reset" width="21" height="22" @mouseenter.native="tooltip($event, '重置')"
                   @click="resetCanvas">
         </svg-icon>
@@ -39,8 +39,8 @@
 </template>
 
 <script>
-import svgIcon from './svgIcon'
-import palette from './palette'
+import svgIcon from './components/svgIcon'
+import palette from './components/palette'
 export default {
   name: 'freePainting',
   components: {
@@ -124,14 +124,23 @@ export default {
       operationStatus: false,
       activeColor: this.toolbarColor.length ? this.toolbarColor[0] : 'black',
       activeSize: '2',
+      firstImgData: null,
       imgStack: [],
       activeIndex: 0,
       paletteColor: 'rgba(0, 186, 189, 1)',
-      paletteShow: false
+      paletteShow: false,
+      resultColor: ''
     }
   },
   mounted () {
     this.init()
+  },
+  watch: {
+    'paletteShow' (newVal) {
+      if (!newVal) {
+        this.setColor(false)
+      }
+    }
   },
   methods: {
     // 创建画布并将图片放到上面
@@ -166,6 +175,12 @@ export default {
           this.context.drawImage(img, this.left, this.top, this.imgWidth, this.imgHeight)
         }
         this.img = img
+      }
+      this.firstImgData = this.context.getImageData(0, 0, this.width, this.height)
+      this.imgStack.push(this.firstImgData)
+      if (this.type == 'line') {
+        this.$refs.canvas.classList.add('cursor')
+        this.setColor(false)
       }
     },
     // 加点
@@ -205,7 +220,9 @@ export default {
     },
     // 画线
     drawLine (event) {
+      if (this.type !== 'line') return
       this.operationStatus = true
+      this.imgStack = this.imgStack.splice(0, this.activeIndex + 1)
       let mx = event.layerX,
         my = event.layerY
       this.context.beginPath()
@@ -231,6 +248,7 @@ export default {
       e.target.classList.add('active')
       if (e.target.getAttribute('data-color') == 'all') {
         this.paletteShow = true
+        this.setColor(true)
       } else {
         this.paletteShow = false
         this.activeColor = e.target.getAttribute('data-color')
@@ -312,12 +330,11 @@ export default {
     // 重置画布
     resetCanvas () {
       if (this.type == 'line') {
-        console.log(this.type)
         this.activeIndex = -1
         this.imgStack = []
+        this.imgStack.push(this.firstImgData)
         document.getElementById('reset').classList.remove('tooltip')
         document.getElementById('reset').classList.add('rotate')
-        console.log(document.getElementById('reset'))
         document.getElementById("reset").addEventListener("transitionend", () => {
           document.getElementById('reset').classList.remove('rotate')
         })
@@ -332,8 +349,16 @@ export default {
     },
     // 获取调色板颜色
     getResultColor (color) {
-      this.activeColor = color[1]
-      this.paletteColor = color[1]
+      this.resultColor = color
+    },
+    // 将调色板颜色赋值给工具栏
+    setColor (flag) {
+      if (flag) {
+        this.activeColor = this.resultColor.hexadecimalText
+        this.paletteColor = this.resultColor.hexadecimalText
+      } else {
+        this.paletteColor = this.resultColor.hexadecimalText
+      }
     },
     // 工具提示
     tooltip (e, tip) {
@@ -356,6 +381,9 @@ export default {
   display: inline-block;
   .canvas {
     border: 1px solid #ccc;
+  }
+  .cursor {
+    cursor: url("./assets/Write.cur"), auto;
   }
   .free_toolbar {
     display: flex;
